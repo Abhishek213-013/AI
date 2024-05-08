@@ -4,14 +4,14 @@ import numpy as np
 
 pygame.init()
 
-# Colors
+#---Colors---
 WHITE = (255, 255, 255)
 GRAY = (180, 180, 180)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 
-# Proportions & Sizes
+#---Proportions & Sizes---
 WIDTH = 300
 HEIGHT = 300
 LINE_WIDTH = 5
@@ -22,13 +22,15 @@ CIRCLE_RADIUS = SQUARE_SIZE // 3
 CIRCLE_WIDTH = 15
 CROSS_WIDTH = 25
 
-
+#---Screen---
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption('Tic Tac Toe AI')
 screen.fill(BLACK)
 
+#---Board---
 board = np.zeros((BOARD_ROWS, BOARD_COLS))
 
+#---Drawing Functions----
 def draw_lines(color=WHITE):
     for i in range(1, BOARD_ROWS):
         pygame.draw.line(screen, color, (0, SQUARE_SIZE * i), (WIDTH, SQUARE_SIZE * i))
@@ -43,7 +45,9 @@ def draw_figures(color=WHITE):
             elif board[row][col] == 2:
                 pygame.draw.line(screen, color, (col * SQUARE_SIZE + SQUARE_SIZE // 4, row * SQUARE_SIZE + SQUARE_SIZE // 4),(col * SQUARE_SIZE + 3 * SQUARE_SIZE // 4, row * SQUARE_SIZE + 3 * SQUARE_SIZE // 4),CROSS_WIDTH)
                 pygame.draw.line(screen, color, (col * SQUARE_SIZE + SQUARE_SIZE // 4, row * SQUARE_SIZE + 3 * SQUARE_SIZE // 4),(col * SQUARE_SIZE + 3 * SQUARE_SIZE // 4, row * SQUARE_SIZE + SQUARE_SIZE // 4),CROSS_WIDTH)
-    
+#-----
+
+#---Game Logic----  
 def mark_square(row, col, player):
     board[row][col] = player
 
@@ -75,8 +79,9 @@ def check_win(player, check_board=board):
 
     return False
 
+#------
 
-
+#---MiniMax----
 def minimax(minimax_board, depth, is_maximizing):
     if check_win(2, minimax_board):
         return 1
@@ -93,7 +98,7 @@ def minimax(minimax_board, depth, is_maximizing):
                     minimax_board[row][col] = 2
                     score = minimax(minimax_board, depth + 1, False)
                     minimax_board[row][col] = 0
-                    best_score = min(score, best_score)
+                    best_score = max(score, best_score)
         return best_score
     
     else:
@@ -104,7 +109,7 @@ def minimax(minimax_board, depth, is_maximizing):
                     minimax_board[row][col] = 1
                     score = minimax(minimax_board, depth + 1, True)
                     minimax_board[row][col] = 0
-                    best_score = max(score, best_score)
+                    best_score = min(score, best_score)
         return best_score
     
 
@@ -139,7 +144,9 @@ draw_lines()
 
 player = 1
 game_over = False
+#-----
 
+#---Game Loop----
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -151,7 +158,10 @@ while True:
 
             if available_square(mouseY, mouseX):
                 mark_square(mouseY, mouseX, player)
-                print(f"Player {player} moved to ({mouseX}, {mouseY})")
+
+                print("Player's Move:")
+                print(board)
+
                 if check_win(player):
                     game_over = True
                 else:
@@ -160,20 +170,30 @@ while True:
                 if game_over:
                     if check_win(1):
                         print("Player 1 Wins!")
-                elif check_win(2):
+                    elif check_win(2):
                         print("Player 2 Wins!")
-                else:
+                    else:
                         print("It's a Tie!")
 
                 if not game_over:
+                    
+                    print("AI's Possible Next States:")
+                    for row in range(BOARD_ROWS):
+                        for col in range(BOARD_COLS):
+                            if board[row][col] == 0:
+                                temp_board = board.copy()
+                                temp_board[row][col] = 2
+                                print(temp_board)
+
                     if best_move():
                         if check_win(2):
                             game_over = True
                         player = player % 2 + 1  
-                        
+
                 if not game_over:
                     if is_board_full():
                         game_over = True
+                        print("It's a Tie!")
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
@@ -195,8 +215,5 @@ while True:
         else:
             draw_figures(GRAY)
             draw_lines(GRAY)
-
-
-            
 
     pygame.display.update()
